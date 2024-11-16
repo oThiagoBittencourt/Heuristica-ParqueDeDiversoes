@@ -1,17 +1,19 @@
 import random
 
-NUM_OPERADORES = 152  # Número de operadores
+NUM_OPERADORES = 0  # Número de operadores
 
 # Função Objetivo
 def calcula_tempo_total(operadores, demanda, tempo_rodada, capacidade, atracoes):
     total_espera = 0
     for a in atracoes:
-        tempo_espera = (demanda[a] * tempo_rodada[a]) / (capacidade[a] * operadores[a])
+        tempo_espera = (demanda[a] * tempo_rodada[a]) / (capacidade[a] * max(operadores[a], 1))
         total_espera += tempo_espera
     return total_espera
 
 # Algoritmo de Colônia de Formigas
-def algoritmo_colonia_formigas(demanda, tempo_rodada, capacidade, atracoes):
+def algoritmo_colonia_formigas(demanda, tempo_rodada, capacidade, atracoes, num_operadores):
+    NUM_OPERADORES = num_operadores
+
     num_ants = 20
     num_iterations = 100
     evaporation_rate = 0.5
@@ -20,30 +22,24 @@ def algoritmo_colonia_formigas(demanda, tempo_rodada, capacidade, atracoes):
     
     feromone = {a: 1 for a in atracoes}
     
-    def calcular_probabilidade(ant, feromone):
-        total_prob = 0
-        for a in atracoes:
-            total_prob += feromone[a] ** alpha
+    def calcular_probabilidade(feromone):
+        total_prob = sum((feromone[a] ** alpha) for a in atracoes)
         probabilities = {a: (feromone[a] ** alpha) / total_prob for a in atracoes}
         return probabilities
     
     def construir_solucao():
-        solution = {}
+        solution = {a: 0 for a in atracoes}
         total_operadores = NUM_OPERADORES
-        total_atracoes = len(atracoes)
         
-        # Distribuindo operadores proporcionalmente
-        for a in atracoes:
-            solution[a] = round((1 / total_atracoes) * total_operadores)
+        probabilities = calcular_probabilidade(feromone)
+        for _ in range(total_operadores):
+            escolha = random.choices(atracoes, weights=[probabilities[a] for a in atracoes], k=1)[0]
+            solution[escolha] += 1
         
-        # Ajustando os operadores para garantir que a soma seja NUM_OPERADORES
-        diff = total_operadores - sum(solution.values())
-        if diff != 0:
-            keys = list(solution.keys())
-            random.shuffle(keys)
-            for i in range(abs(diff)):
-                solution[keys[i % len(keys)]] += 1 if diff > 0 else -1
         return solution
+    
+    best_solution = None
+    best_value = float("inf")
     
     for _ in range(num_iterations):
         all_solutions = []
@@ -55,12 +51,20 @@ def algoritmo_colonia_formigas(demanda, tempo_rodada, capacidade, atracoes):
             all_solutions.append(solution)
             all_values.append(value)
         
+        # Atualizando os feromônios
+        for a in atracoes:
+            feromone[a] *= (1 - evaporation_rate)
         for i in range(num_ants):
             for a in atracoes:
-                feromone[a] = (1 - evaporation_rate) * feromone[a] + (1 / all_values[i]) ** beta
+                feromone[a] += (1 / all_values[i]) ** beta if a in all_solutions[i] else 0
         
-        best_index = all_values.index(min(all_values))
-        best_solution = all_solutions[best_index]
-        best_value = all_values[best_index]
+        # Melhor solução da iteração
+        iteration_best_index = all_values.index(min(all_values))
+        iteration_best_solution = all_solutions[iteration_best_index]
+        iteration_best_value = all_values[iteration_best_index]
+        
+        if iteration_best_value < best_value:
+            best_solution = iteration_best_solution
+            best_value = iteration_best_value
     
     return best_solution, best_value

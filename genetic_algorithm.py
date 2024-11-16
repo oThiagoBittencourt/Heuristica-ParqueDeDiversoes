@@ -1,6 +1,6 @@
 import random
 
-NUM_OPERADORES = 152  # Número de operadores
+NUM_OPERADORES = 0  # Número de operadores
 
 # Função Objetivo
 def calcula_tempo_total(operadores, demanda, tempo_rodada, capacidade, atracoes):
@@ -11,7 +11,9 @@ def calcula_tempo_total(operadores, demanda, tempo_rodada, capacidade, atracoes)
     return total_espera
 
 # Algoritmo Genético
-def algoritmo_genetico(demanda, tempo_rodada, capacidade, atracoes):
+def algoritmo_genetico(demanda, tempo_rodada, capacidade, atracoes, num_operadores):
+    NUM_OPERADORES = num_operadores
+    
     population_size = 50
     generations = 100
     mutation_rate = 0.1
