@@ -19,4 +19,7 @@ Para a realização dos cálculos, foi utilizado três heurísticas de PO:
 - Recozimento `(simulated_annealing.py)`
 - Colônia de Formigas `(ant_colony_optimization.py)`
 
+Pesquisa:
+[Pesquisa-Parque de Diversões.pdf](https://github.com/user-attachments/files/17838900/Pesquisa-Parque.de.Diversoes.pdf)
+
 ---
